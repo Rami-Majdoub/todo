@@ -1,13 +1,54 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
+import { WalletConnectorService } from './services/contract-service.service';
+import { Apollo, gql } from 'apollo-angular';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent {
+export class AppComponent implements OnDestroy {
   
-  constructor(){ }
+  constructor(
+    public wallet_: WalletConnectorService,
+    private apollo: Apollo,
+  ){ }
+
+  accountAddress = "";
+  async connectWallet(){
+    this.accountAddress = await this.wallet_.connectAccount();
+  }
+
+  s: any;
+  get(){
+    this.s = this.apollo.watchQuery({
+      query: gql `
+        query get($account: String) {
+          todos(where: { from: $account })
+          { id done content }
+        }
+      `,
+      variables: {
+        account: this.accountAddress
+      }
+    }).valueChanges.subscribe({
+      next: (val: any) => {
+        this.todos = [];
+        val.data.todos.map(
+          (todo: { done: boolean; content: any; }) =>
+          this.todos.push({
+            done: todo.done,
+            action: todo.content
+          })
+        );
+      }
+    }
+    )
+  }
+
+  ngOnDestroy(): void {
+    this.s?.unsubscribe();
+  }
 
   currentTodo: string = '';
 

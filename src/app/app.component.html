@@ -5,6 +5,10 @@
 </div>
 
 <div class="content" role="main">
+  <span>account: {{ accountAddress }}</span>
+  <button (click)="connectWallet()">Connect wallet</button>
+  <button (click)="get()">Refresh data</button>
+
   <input  type="text" [(ngModel)]="currentTodo" />
   <button (click)="addCurrentTodo()">Add</button>
   <button (click)="clearCurrentTodo()">Clear</button>
